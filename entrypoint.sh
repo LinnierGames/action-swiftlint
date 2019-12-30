@@ -11,4 +11,11 @@ function convertToGitHubActionsLoggingCommands() {
     sed -E 's/^(.*):([0-9]+):([0-9]+): (warning|error|[^:]+): (.*)/::error file=\1,line=\2,col=\3::\5/'
 }
 
-set -o pipefail && swiftlint "$@" | stripPWD | convertToGitHubActionsLoggingCommands
+function setExitStatusCode() {
+    grep 'not'
+    if [ $? == 0 ]; then
+       exit 1
+    fi
+}
+
+set -o pipefail && swiftlint "$@" | stripPWD | convertToGitHubActionsLoggingCommands | setExitStatusCode
